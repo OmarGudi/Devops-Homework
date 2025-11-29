@@ -21,14 +21,20 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Metadata
         id: meta
         run: |
-          echo "IMAGE=ghcr.io/${{ github.repository_owner }}/devops-homework" >> $GITHUB_OUTPUT
-          echo "TAG=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+          # Convertir owner y repo a minúsculas
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/$REPO_OWNER/$REPO_NAME"
+          TAG=$(echo $GITHUB_SHA | cut -c1-7)
+
+          echo "IMAGE=$IMAGE" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
 
       - name: Build and Push Image
         uses: docker/build-push-action@v4
